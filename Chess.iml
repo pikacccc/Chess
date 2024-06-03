@@ -13,10 +13,10 @@
     <mobileApplicationType name="MIDP" />
   </component>
   <component name="com.intellij.j2meplugin.module.settings.midp.MIDPSettings">
-    <setting name="MIDlet-1" module.settings.user.defined.value="Chess,   ,   xqwlight.XQWLMIDlet" />
+    <setting name="MIDlet-1" module.settings.user.defined.value="chess,  ,  xqwlight.XQWLMIDlet" />
     <setting name="MIDlet-Jar-URL" module.settings.user.defined.value="Chess.jar" />
     <setting name="MIDlet-Name" module.settings.user.defined.value="Chess" />
-    <setting name="MIDlet-Vendor" module.settings.user.defined.value="PIKAC" />
+    <setting name="MIDlet-Vendor" module.settings.user.defined.value="My Vendor" />
     <setting name="MIDlet-Version" module.settings.user.defined.value="1.0" />
     <jarUrl jarUrlName="$MODULE_DIR$/Chess.jar" />
     <descriptionPath path="$MODULE_DIR$/Chess.jad" useUserDescriptor="true" />
