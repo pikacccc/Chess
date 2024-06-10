@@ -91,8 +91,8 @@ class XQWLCanvas extends Canvas implements CommandListener {
     private int normalWidth = getWidth();
     private int normalHeight = getHeight();
 
-    Command cmdBack = new Command("", Command.OK, 1);
-    Command cmdRetract = new Command("", Command.EXIT, 1);
+    Command cmdBack = new Command("", Command.EXIT, 1);
+    Command cmdRetract = new Command("", Command.OK, 1);
 
     volatile int phase = PHASE_LOADING;
 
