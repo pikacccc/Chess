@@ -21,8 +21,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 package xqwlight;
 
-import javax.microedition.lcdui.Alert;
-import javax.microedition.lcdui.AlertType;
+import com.sun.j2me.global.FormatAbstractionLayer;
+
 import javax.microedition.lcdui.Canvas;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
@@ -31,7 +31,6 @@ import javax.microedition.lcdui.Displayable;
 import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
-import javax.microedition.lcdui.game.GameCanvas;
 
 class XQWLCanvas extends Canvas implements CommandListener {
     private static final int PHASE_LOADING = 0;
@@ -89,12 +88,11 @@ class XQWLCanvas extends Canvas implements CommandListener {
     private String message;
     private int cursorX, cursorY;
     private int sqSelected, mvLast;
-//     Assume FullScreenMode = false
     private int normalWidth = getWidth();
     private int normalHeight = getHeight();
 
-    Command cmdBack = new Command("返回", Command.OK, 1);
-    Command cmdRetract = new Command("悔棋", Command.EXIT, 1);
+    Command cmdBack = new Command("", Command.OK, 1);
+    Command cmdRetract = new Command("", Command.EXIT, 1);
 
     volatile int phase = PHASE_LOADING;
 
@@ -102,6 +100,10 @@ class XQWLCanvas extends Canvas implements CommandListener {
     private Image imgBoard, imgSelected, imgSelected2, imgCursor, imgCursor2;
     private Image[] imgPieces = new Image[24];
     private int squareSize, width, height, left, right, top, bottom;
+
+    //后加的
+    private Image BackImg;
+    private Image UndoImg;
 
     XQWLCanvas(XQWLMIDlet midlet_) {
         midlet = midlet_;
@@ -111,6 +113,7 @@ class XQWLCanvas extends Canvas implements CommandListener {
 
         setCommandListener(this);
     }
+
 
     void load() {
         setFullScreenMode(true);
@@ -151,6 +154,7 @@ class XQWLCanvas extends Canvas implements CommandListener {
                 }
             }.start();
         }
+
     }
 
     public void paint(Graphics g) {
@@ -172,11 +176,11 @@ class XQWLCanvas extends Canvas implements CommandListener {
             }
             if (!init) {
                 init = true;
-                // "width" and "height" are Full-Screen values
+
                 String imagePath = "res/images/";
                 squareSize = Math.min(width / 9, height / 10);
                 if (squareSize >= 36) {
-                    squareSize = 36;
+                    squareSize = 54;
                     imagePath += "large/";
                 } else if (squareSize >= 26) {
                     squareSize = 26;
@@ -196,6 +200,8 @@ class XQWLCanvas extends Canvas implements CommandListener {
                     imgSelected2 = Image.createImage(imagePath + "selected2.png");
                     imgCursor = Image.createImage(imagePath + "cursor.png");
                     imgCursor2 = Image.createImage(imagePath + "cursor2.png");
+                    BackImg = Image.createImage("res/images/btn_back.png");
+                    UndoImg = Image.createImage("res/images/btn_undo.png");
                     for (int pc = 0; pc < 24; pc++) {
                         if (IMAGE_NAME[pc] == null) {
                             imgPieces[pc] = null;
@@ -248,13 +254,8 @@ class XQWLCanvas extends Canvas implements CommandListener {
         }
         if (phase == PHASE_THINKING) {
             int x, y;
-            if (midlet.moveMode == COMPUTER_RED) {
-                x = (Position.FILE_X(sqDst) < 8 ? left : right);
-                y = (Position.RANK_Y(sqDst) < 8 ? top : bottom);
-            } else {
-                x = (Position.FILE_X(sqDst) < 8 ? right : left);
-                y = (Position.RANK_Y(sqDst) < 8 ? bottom : top);
-            }
+            x = width / 2 + 200;
+            y = height / 2;
             g.drawImage(imgThinking, x, y, Graphics.LEFT + Graphics.TOP);
         } else if (phase == PHASE_EXITTING) {
             g.setFont(fontLarge);
@@ -262,18 +263,14 @@ class XQWLCanvas extends Canvas implements CommandListener {
             g.drawString(message, width / 2, height / 2, Graphics.HCENTER + Graphics.BASELINE);
         }
 
-        if (hasPointerEvents()) {
-            g.setFont(fontSmall);
-            g.setColor(0x0000ff);
-            g.drawString("返回", 0, height, Graphics.LEFT + Graphics.BASELINE);
-            g.drawString("悔棋", width, height, Graphics.RIGHT + Graphics.BASELINE);
-        }
+        g.drawImage(BackImg, 30, height - 50, 0);
+        g.drawImage(UndoImg, width - 100, height - 50, 0);
     }
 
     protected void keyPressed(int code) {
         if (phase == PHASE_EXITTING) {
-            midlet.startMusic("form");
-            Display.getDisplay(midlet).setCurrent(midlet.form);
+            midlet.OpenMenu();
+            midlet.CloseGame();
             return;
         }
         if (phase == PHASE_THINKING) {
@@ -337,32 +334,6 @@ class XQWLCanvas extends Canvas implements CommandListener {
         serviceRepaints();
     }
 
-    protected void pointerPressed(int x, int y) {
-        if (phase == PHASE_EXITTING) {
-            midlet.startMusic("form");
-            Display.getDisplay(midlet).setCurrent(midlet.form);
-            return;
-        }
-        if (phase == PHASE_THINKING) {
-            return;
-        }
-        if (height - y < fontSmall.getHeight()) {
-            switch (x * 3 / width) {
-                case 0:
-                    back();
-                    return;
-                case 1:
-                    retract();
-                    return;
-            }
-        }
-        cursorX = Util.MIN_MAX(0, (x - left) / squareSize, 8);
-        cursorY = Util.MIN_MAX(0, (y - top) / squareSize, 9);
-        clickSquare();
-        repaint();
-        serviceRepaints();
-    }
-
     private void clickSquare() {
         int sq = Position.COORD_XY(cursorX + Position.FILE_LEFT, cursorY + Position.RANK_TOP);
         if (midlet.moveMode == COMPUTER_RED) {
@@ -402,23 +373,24 @@ class XQWLCanvas extends Canvas implements CommandListener {
     private boolean getResult(int response) {
         if (pos.isMate()) {
             midlet.playSound(response < 0 ? RESP_WIN : RESP_LOSS);
-            message = (response < 0 ? "祝贺你取得胜利！" : "请再接再厉！");
+            midlet.OpenGameOver(response < 0);
+            midlet.CloseGame();
             return true;
         }
-        int vlRep = pos.repStatus(3);
-        if (vlRep > 0) {
-            vlRep = (response < 0 ? pos.repValue(vlRep) : -pos.repValue(vlRep));
-            midlet.playSound(vlRep > Position.WIN_VALUE ? RESP_LOSS :
-                    vlRep < -Position.WIN_VALUE ? RESP_WIN : RESP_DRAW);
-            message = (vlRep > Position.WIN_VALUE ? "长打作负，请不要气馁！" :
-                    vlRep < -Position.WIN_VALUE ? "电脑长打作负，祝贺你取得胜利！" : "双方不变作和，辛苦了！");
-            return true;
-        }
-        if (pos.moveNum > 100) {
-            midlet.playSound(RESP_DRAW);
-            message = "超过自然限着作和，辛苦了！";
-            return true;
-        }
+//        int vlRep = pos.repStatus(3);
+//        if (vlRep > 0) {
+//            vlRep = (response < 0 ? pos.repValue(vlRep) : -pos.repValue(vlRep));
+//            midlet.playSound(vlRep > Position.WIN_VALUE ? RESP_LOSS :
+//                    vlRep < -Position.WIN_VALUE ? RESP_WIN : RESP_DRAW);
+//            message = (vlRep > Position.WIN_VALUE ? "长打作负，请不要气馁！" :
+//                    vlRep < -Position.WIN_VALUE ? "电脑长打作负，祝贺你取得胜利！" : "双方不变作和，辛苦了！");
+//            return true;
+//        }
+//        if (pos.moveNum > 100) {
+//            midlet.playSound(RESP_DRAW);
+//            message = "超过自然限着作和，辛苦了！";
+//            return true;
+//        }
         if (response != RESP_HUMAN_SINGLE) {
             if (response >= 0) {
                 midlet.playSound(response);
@@ -434,7 +406,7 @@ class XQWLCanvas extends Canvas implements CommandListener {
 
     private boolean addMove(int mv) {
         if (pos.legalMove(mv)) {
-            if (pos.makeMove(mv)) {
+            if (pos.makeMove(mv, true)) {
                 midlet.playSound(pos.inCheck() ? RESP_CHECK :
                         pos.captured() ? RESP_CAPTURE : RESP_MOVE);
                 if (pos.captured()) {
@@ -460,7 +432,7 @@ class XQWLCanvas extends Canvas implements CommandListener {
         repaint();
         serviceRepaints();
         mvLast = search.searchMain(1000 << (midlet.level << 1));
-        pos.makeMove(mvLast);
+        pos.makeMove(mvLast, true);
         int response = pos.inCheck() ? RESP_CHECK2 :
                 pos.captured() ? RESP_CAPTURE2 : RESP_MOVE2;
         if (pos.captured()) {
@@ -475,7 +447,6 @@ class XQWLCanvas extends Canvas implements CommandListener {
     void back() {
         midlet.rsData[0] = 0;
         midlet.startMusic("form");
-        Display.getDisplay(midlet).setCurrent(midlet.form);
     }
 
     void retract() {
@@ -488,9 +459,13 @@ class XQWLCanvas extends Canvas implements CommandListener {
 
     public void commandAction(Command command, Displayable displayable) {
         if (command == cmdBack) {
-            back();
+            midlet.OpenMenu();
+            midlet.CloseGame();
         } else if (command == cmdRetract) {
             retract();
         }
+    }
+
+    public void Stop() {
     }
 }

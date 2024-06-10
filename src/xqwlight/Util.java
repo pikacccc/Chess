@@ -1,5 +1,6 @@
 package xqwlight;
 
+import javax.microedition.lcdui.Image;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -124,5 +125,15 @@ public class Util {
 			}
 			stepLevel --;
 		}
+	}
+
+	public static Image LoadImg(String name) {
+		Image tempImg = null;
+		try {
+			tempImg = Image.createImage(name);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return tempImg;
 	}
 }

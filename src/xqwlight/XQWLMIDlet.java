@@ -33,7 +33,6 @@ import javax.microedition.lcdui.Form;
 import javax.microedition.lcdui.Gauge;
 import javax.microedition.lcdui.Item;
 import javax.microedition.lcdui.ItemStateListener;
-import javax.microedition.lcdui.Ticker;
 import javax.microedition.media.Manager;
 import javax.microedition.media.Player;
 import javax.microedition.media.control.VolumeControl;
@@ -42,245 +41,250 @@ import javax.microedition.rms.RecordEnumeration;
 import javax.microedition.rms.RecordStore;
 
 public class XQWLMIDlet extends MIDlet {
-	private static final String STORE_NAME = "XQWLight";
+    private static final String STORE_NAME = "XQWLight";
 
-	static final String[] SOUND_NAME = {
-		"click", "illegal", "move", "move2", "capture", "capture2",
-		"check", "check2", "win", "draw", "loss",
-	};
+    static final String[] SOUND_NAME = {
+            "click", "illegal", "move", "move2", "capture", "capture2",
+            "check", "check2", "win", "draw", "loss",
+    };
 
-	static final int RS_DATA_LEN = 512;
+    static final int RS_DATA_LEN = 512;
 
-	/**
-	 * 0: Status, 0 = Startup Form, 1 = Red To Move, 2 = Black To Move<br>
-	 * 16: Player, 0 = Red, 1 = Black (Flipped), 2 = Both<br>
-	 * 17: Handicap, 0 = None, 1 = 1 Knight, 2 = 2 Knights, 3 = 9 Pieces<br>
-	 * 18: Level, 0 = Beginner, 1 = Amateur, 2 = Expert<br>
-	 * 19: Sound Level, 0 = Mute, 5 = Max<br>
-	 * 20: Music Level, 0 = Mute, 5 = Max<br>
-	 * 256-511: Squares
-	 */
-	byte[] rsData = new byte[RS_DATA_LEN];
-	int moveMode, handicap, level, sound, music;
-	Player midiPlayer = null;
-	Form form = new Form("中国象棋");
-	XQWLCanvas canvas = new XQWLCanvas(this);
+    byte[] rsData = new byte[RS_DATA_LEN];
+    public int moveMode, handicap, level, sound, music;
+    Player midiPlayer = null;
 
-	Command cmdStart = new Command("开始", Command.OK, 1);
-	Command cmdExit = new Command("退出", Command.BACK, 1);
+    private final Display display;
+    public XQWLCanvas canvas;
+    public GameOver gameOver;
+    public Menu gameMenu;
 
-	ChoiceGroup cgMoveMode = new ChoiceGroup("谁先走", Choice.EXCLUSIVE,
-			new String[] {"我先走", "电脑先走", "不用电脑"}, null);
-	ChoiceGroup cgHandicap = new ChoiceGroup("先走让子", Choice.POPUP,
-			new String[] {"不让子", "让左马", "让双马", "让九子"}, null);
-	ChoiceGroup cgLevel = new ChoiceGroup("电脑水平", Choice.POPUP,
-			new String[] {"入门", "业余", "专业"}, null);
-	Gauge gSound = new Gauge("音效", true, 5, 0);
-	Gauge gMusic = new Gauge("音乐", true, 5, 0);
+//    Form form = new Form("中国象棋");
+//    Command cmdStart = new Command("开始", Command.OK, 1);
+//    Command cmdExit = new Command("退出", Command.BACK, 1);
+//
+//    ChoiceGroup cgMoveMode = new ChoiceGroup("谁先走", Choice.EXCLUSIVE,
+//            new String[]{"我先走", "电脑先走", "不用电脑"}, null);
+//    ChoiceGroup cgHandicap = new ChoiceGroup("先走让子", Choice.POPUP,
+//            new String[]{"不让子", "让左马", "让双马", "让九子"}, null);
+//    ChoiceGroup cgLevel = new ChoiceGroup("电脑水平", Choice.POPUP,
+//            new String[]{"入门", "业余", "专业"}, null);
+//
+//    {
+//        form.append(cgMoveMode);
+//        form.append(cgHandicap);
+//        form.append(cgLevel);
+//        form.addCommand(cmdStart);
+//        form.addCommand(cmdExit);
+//
+//        form.setCommandListener(new CommandListener() {
+//            public void commandAction(Command c, Displayable d) {
+//                if (c == cmdStart) {
+//                    moveMode = cgMoveMode.getSelectedIndex();
+//                    handicap = cgHandicap.getSelectedIndex();
+//                    level = cgLevel.getSelectedIndex();
+//                    canvas.load();
+//                    startMusic("canvas");
+//                    Display.getDisplay(XQWLMIDlet.this).setCurrent(canvas);
+//                } else if (c == cmdExit) {
+//                    destroyApp(false);
+//                    notifyDestroyed();
+//                }
+//            }
+//        });
+//    }
 
-	{
-		form.append(cgMoveMode);
-		form.append(cgHandicap);
-		form.append(cgLevel);
-		form.append(gSound);
-		form.append(gMusic);
-		form.addCommand(cmdStart);
-		form.addCommand(cmdExit);
+    private boolean started = false;
 
-		form.setCommandListener(new CommandListener() {
-			public void commandAction(Command c, Displayable d) {
-				if (c == cmdStart) {
-					moveMode = cgMoveMode.getSelectedIndex();
-					handicap = cgHandicap.getSelectedIndex();
-					level = cgLevel.getSelectedIndex();
-					sound = gSound.getValue();
-					music = gMusic.getValue();
-					canvas.load();
-					startMusic("canvas");
-					Display.getDisplay(XQWLMIDlet.this).setCurrent(canvas);
-				} else if (c == cmdExit) {
-					destroyApp(false);
-					notifyDestroyed();
-				}
-			}
-		});
+    public XQWLMIDlet() {
+        this.display = Display.getDisplay(this);
+        canvas = new XQWLCanvas(this);
+        gameMenu = new Menu();
+        gameMenu.midlet = this;
+        gameOver = new GameOver();
+        gameOver.midlet = this;
+    }
 
-		form.setItemStateListener(new ItemStateListener() {
-			public void itemStateChanged(Item i) {
-				if (i == gSound) {
-					sound = gSound.getValue();
-					playSound(0);
-				} else if (i == gMusic) {
-					int originalMusic = music;
-					music = gMusic.getValue();
-					if (music == 0) {
-						stopMusic();
-					} else if (originalMusic == 0) {
-						startMusic("form");
-					} else {
-						setMusicVolume();
-					}
-				}
-			}
-		});
-	}
+    public void startApp() {
+        if (started) {
+            return;
+        }
+        started = true;
+        RestoreData();
+        startMusic("form");
+        OpenMenu();
+    }
 
-	private boolean started = false;
+    public void pauseApp() {
+        // Do Nothing
+    }
 
-	public void startApp() {
-		if (started) {
-			return;
-		}
-		started = true;
-		for (int i = 0; i < RS_DATA_LEN; i ++) {
-			rsData[i] = 0;
-		}
-		rsData[19] = 3;
-		rsData[20] = 2;
-		try {
-			RecordStore rs = RecordStore.openRecordStore(STORE_NAME, true);
-			RecordEnumeration re = rs.enumerateRecords(null, null, false);
-			if (re.hasNextElement()) {
-				int recordId = re.nextRecordId();
-				if (rs.getRecordSize(recordId) == RS_DATA_LEN) {
-					rsData = rs.getRecord(recordId);
-				} else {
-					rs.setRecord(recordId, rsData, 0, RS_DATA_LEN);
-				}
-			} else {
-				rs.addRecord(rsData, 0, RS_DATA_LEN);
-			}
-			rs.closeRecordStore();
-		} catch (Exception e) {
-			// Ignored
-		}
-		moveMode = Util.MIN_MAX(0, rsData[16], 2);
-		handicap = Util.MIN_MAX(0, rsData[17], 3);
-		level = Util.MIN_MAX(0, rsData[18], 2);
-		sound = Util.MIN_MAX(0, rsData[19], 5);
-		music = Util.MIN_MAX(0, rsData[20], 5);
-		cgMoveMode.setSelectedIndex(moveMode, true);
-		cgLevel.setSelectedIndex(level, true);
-		cgHandicap.setSelectedIndex(handicap, true);
-		gSound.setValue(sound);
-		gMusic.setValue(music);
-		if (rsData[0] == 0) {
-			startMusic("form");
-			Display.getDisplay(this).setCurrent(form);
-		} else {
-			canvas.load();
-			startMusic("canvas");
-			Display.getDisplay(this).setCurrent(canvas);
-		}
-	}
+    public void destroyApp(boolean unc) {
+        stopMusic();
+        SavaData();
+        started = false;
+    }
 
-	public void pauseApp() {
-		// Do Nothing
-	}
+    Player createPlayer(String name, String type) {
+        InputStream in = getClass().getResourceAsStream(name);
+        try {
+            return Manager.createPlayer(in, type);
+            // If creating "Player" succeeded, no need to close "InputStream".
+        } catch (Exception e) {
+            try {
+                in.close();
+            } catch (Exception e2) {
+                // Ignored
+            }
+            return null;
+        }
+    }
 
-	public void destroyApp(boolean unc) {
-		stopMusic();
-		rsData[16] = (byte) moveMode;
-		rsData[17] = (byte) handicap;
-		rsData[18] = (byte) level;
-		rsData[19] = (byte) sound;
-		rsData[20] = (byte) music;
-		try {
-			RecordStore rs = RecordStore.openRecordStore(STORE_NAME, true);
-			RecordEnumeration re = rs.enumerateRecords(null, null, false);
-			if (re.hasNextElement()) {
-				int recordId = re.nextRecordId();
-				rs.setRecord(recordId, rsData, 0, RS_DATA_LEN);
-			} else {
-				rs.addRecord(rsData, 0, RS_DATA_LEN);
-			}
-			rs.closeRecordStore();
-		} catch (Exception e) {
-			// Ignored
-		}
-		started = false;
-	}
+    void playSound(int response) {
+        final int i = response;
+        new Thread() {
+            public void run() {
+                Player p = createPlayer("/res/sounds/" + SOUND_NAME[i] + ".wav", "audio/x-wav");
+                if (p == null) {
+                    return;
+                }
+                try {
+                    p.realize();
+                    VolumeControl vc = (VolumeControl) p.getControl("VolumeControl");
+                    if (vc != null) {
+                        vc.setLevel(2 * 20);
+                    }
+                    long t = p.getDuration();
+                    p.start();
+                    if (t != Player.TIME_UNKNOWN) {
+                        sleep(t / 1000 + 1);
+                    }
+                    while (p.getState() == Player.STARTED) {
+                        sleep(100);
+                    }
+                } catch (Exception e) {
+                    // Ignored
+                }
+                p.close();
+            }
+        }.start();
+    }
 
-	Player createPlayer(String name, String type) {
-		InputStream in = getClass().getResourceAsStream(name);
-		try {
-			return Manager.createPlayer(in, type);
-			// If creating "Player" succeeded, no need to close "InputStream".
-		} catch (Exception e) {
-			try {
-				in.close();
-			} catch (Exception e2) {
-				// Ignored
-			}
-			return null;
-		}
-	}
+    void stopMusic() {
+        if (midiPlayer != null) {
+            midiPlayer.close();
+            midiPlayer = null;
+        }
+    }
 
-	void playSound(int response) {
-		if (sound == 0) {
-			return;
-		}
-		final int i = response;
-		new Thread() {
-			public void run() {
-				Player p = createPlayer("/sounds/" + SOUND_NAME[i] + ".wav", "audio/x-wav");
-				if (p == null) {
-					return;
-				}
-				try {
-					p.realize();
-					VolumeControl vc = (VolumeControl) p.getControl("VolumeControl");
-					if (vc != null) {
-						vc.setLevel(sound * 20);
-					}
-					long t = p.getDuration();
-					p.start();
-					if (t != Player.TIME_UNKNOWN) {
-						sleep(t / 1000 + 1);
-					}
-					while (p.getState() == Player.STARTED) {
-						sleep(100);
-					}
-				} catch (Exception e) {
-					// Ignored
-				}
-				p.close();
-			}
-		}.start();
-	}
+    void startMusic(String strMusic) {
+        stopMusic();
+        if (music == 0) {
+            return;
+        }
+        midiPlayer = createPlayer("/musics/" + strMusic + ".mid", "audio/midi");
+        if (midiPlayer == null) {
+            return;
+        }
+        try {
+            midiPlayer.setLoopCount(-1);
+            midiPlayer.realize();
+            midiPlayer.start();
+        } catch (Exception e) {
+            // Ignored
+        }
+    }
 
-	void stopMusic() {
-		if (midiPlayer != null) {
-			midiPlayer.close();
-			midiPlayer = null;
-		}
-	}
+    void RestoreData() {
+        for (int i = 0; i < RS_DATA_LEN; i++) {
+            rsData[i] = 0;
+        }
+        rsData[19] = 3;
+        rsData[20] = 2;
+        try {
+            RecordStore rs = RecordStore.openRecordStore(STORE_NAME, true);
+            RecordEnumeration re = rs.enumerateRecords(null, null, false);
+            if (re.hasNextElement()) {
+                int recordId = re.nextRecordId();
+                if (rs.getRecordSize(recordId) == RS_DATA_LEN) {
+                    rsData = rs.getRecord(recordId);
+                } else {
+                    rs.setRecord(recordId, rsData, 0, RS_DATA_LEN);
+                }
+            } else {
+                rs.addRecord(rsData, 0, RS_DATA_LEN);
+            }
+            rs.closeRecordStore();
+        } catch (Exception e) {
+            // Ignored
+        }
+        moveMode = Util.MIN_MAX(0, rsData[16], 2);
+        handicap = Util.MIN_MAX(0, rsData[17], 3);
+        level = Util.MIN_MAX(1, rsData[18], 2);
+        sound = Util.MIN_MAX(0, rsData[19], 5);
+        music = Util.MIN_MAX(0, rsData[20], 5);
+//        cgMoveMode.setSelectedIndex(moveMode, true);
+//        cgLevel.setSelectedIndex(level, true);
+//        cgHandicap.setSelectedIndex(handicap, true);
+    }
 
-	void startMusic(String strMusic) {
-		stopMusic();
-		if (music == 0) {
-			return;
-		}
-		midiPlayer = createPlayer("/musics/" + strMusic + ".mid", "audio/midi");
-		if (midiPlayer == null) {
-			return;
-		}
-		try {
-			midiPlayer.setLoopCount(-1);
-			midiPlayer.realize();
-			setMusicVolume();
-			midiPlayer.start();
-		} catch (Exception e) {
-			// Ignored
-		}
-	}
+    void SavaData() {
+        rsData[16] = (byte) moveMode;
+        rsData[17] = (byte) handicap;
+        rsData[18] = (byte) level;
+        rsData[19] = (byte) sound;
+        rsData[20] = (byte) music;
+        try {
+            RecordStore rs = RecordStore.openRecordStore(STORE_NAME, true);
+            RecordEnumeration re = rs.enumerateRecords(null, null, false);
+            if (re.hasNextElement()) {
+                int recordId = re.nextRecordId();
+                rs.setRecord(recordId, rsData, 0, RS_DATA_LEN);
+            } else {
+                rs.addRecord(rsData, 0, RS_DATA_LEN);
+            }
+            rs.closeRecordStore();
+        } catch (Exception e) {
+            // Ignored
+        }
+    }
 
-	void setMusicVolume() {
-		if (midiPlayer != null) {
-			VolumeControl vc = (VolumeControl) midiPlayer.getControl("VolumeControl");
-			if (vc != null) {
-				vc.setLevel(music * 10);
-			}
-		}
-	}
+    public void OpenMenu() {
+        gameMenu.start();
+        display.setCurrent(gameMenu);
+    }
+
+    public void CloseMenu() {
+        gameMenu.stop();
+    }
+
+    public void StartGame() {
+        InitData();
+
+        canvas.load();
+        startMusic("canvas");
+        display.setCurrent(canvas);
+    }
+
+    public void CloseGame() {
+        canvas.back();
+    }
+
+    public void exitMIDlet() {
+        destroyApp(true);
+        notifyDestroyed();
+    }
+
+    public void OpenGameOver(boolean win) {
+        gameOver.start(win);
+        display.setCurrent(gameOver);
+    }
+
+    public void CloseGameOver() {
+        gameOver.stop();
+    }
+
+    public void InitData() {
+        moveMode = 0;
+    }
 }
