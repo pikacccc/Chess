@@ -182,7 +182,7 @@ public class XQWLMIDlet extends MIDlet {
         if (music == 0) {
             return;
         }
-        midiPlayer = createPlayer("/musics/" + strMusic + ".mid", "audio/midi");
+        midiPlayer = createPlayer("/res/musics/" + strMusic + ".mid", "audio/midi");
         if (midiPlayer == null) {
             return;
         }

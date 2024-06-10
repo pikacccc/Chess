@@ -31,8 +31,9 @@ import javax.microedition.lcdui.Displayable;
 import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
+import javax.microedition.lcdui.game.GameCanvas;
 
-class XQWLCanvas extends Canvas implements CommandListener {
+class XQWLCanvas extends GameCanvas implements CommandListener {
     private static final int PHASE_LOADING = 0;
     private static final int PHASE_WAITING = 1;
     private static final int PHASE_THINKING = 2;
@@ -70,9 +71,9 @@ class XQWLCanvas extends Canvas implements CommandListener {
 
     static {
         try {
-            imgBackground = Image.createImage("res/images/background.png");
-            imgXQWLight = Image.createImage("res/images/xqwlight.png");
-            imgThinking = Image.createImage("res/images/thinking.png");
+            imgBackground = Image.createImage("/res/images/background.png");
+            imgXQWLight = Image.createImage("/res/images/xqwlight.png");
+            imgThinking = Image.createImage("/res/images/thinking.png");
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
@@ -106,6 +107,7 @@ class XQWLCanvas extends Canvas implements CommandListener {
     private Image UndoImg;
 
     XQWLCanvas(XQWLMIDlet midlet_) {
+        super(false);
         midlet = midlet_;
         setFullScreenMode(true);
         addCommand(cmdBack);
@@ -177,7 +179,7 @@ class XQWLCanvas extends Canvas implements CommandListener {
             if (!init) {
                 init = true;
 
-                String imagePath = "res/images/";
+                String imagePath = "/res/images/";
                 squareSize = Math.min(width / 9, height / 10);
                 if (squareSize >= 36) {
                     squareSize = 54;
@@ -200,8 +202,8 @@ class XQWLCanvas extends Canvas implements CommandListener {
                     imgSelected2 = Image.createImage(imagePath + "selected2.png");
                     imgCursor = Image.createImage(imagePath + "cursor.png");
                     imgCursor2 = Image.createImage(imagePath + "cursor2.png");
-                    BackImg = Image.createImage("res/images/btn_back.png");
-                    UndoImg = Image.createImage("res/images/btn_undo.png");
+                    BackImg = Image.createImage("/res/images/btn_back.png");
+                    UndoImg = Image.createImage("/res/images/btn_undo.png");
                     for (int pc = 0; pc < 24; pc++) {
                         if (IMAGE_NAME[pc] == null) {
                             imgPieces[pc] = null;
