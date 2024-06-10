@@ -72,24 +72,24 @@ public class Menu extends GameCanvas implements CommandListener, Runnable {
     private int keyTrigger = 0;
 
     private void tick() {
-        int keys = getKeyStates();
-
-        int inv = 0xffffffff - keyTrigger;
-        int key = inv & keys;
-        keyTrigger &= keys;
-//        System.out.println(keys);
-        if ((key & DOWN_PRESSED) != 0) {
-            selectedOption = (selectedOption + 1) % 2;
-            keyTrigger |= DOWN_PRESSED;
-        }
-        if ((key & UP_PRESSED) != 0) {
-            selectedOption = (selectedOption - 1 + 2) % 2;
-            keyTrigger |= UP_PRESSED;
-        }
-        if ((key & FIRE_PRESSED) != 0) {
-            keyTrigger |= FIRE_PRESSED;
-            executeSelectedOption();
-        }
+//        int keys = getKeyStates();
+//
+//        int inv = 0xffffffff - keyTrigger;
+//        int key = inv & keys;
+//        keyTrigger &= keys;
+////        System.out.println(keys);
+//        if ((key & DOWN_PRESSED) != 0) {
+//            selectedOption = (selectedOption + 1) % 2;
+//            keyTrigger |= DOWN_PRESSED;
+//        }
+//        if ((key & UP_PRESSED) != 0) {
+//            selectedOption = (selectedOption - 1 + 2) % 2;
+//            keyTrigger |= UP_PRESSED;
+//        }
+//        if ((key & FIRE_PRESSED) != 0) {
+//            keyTrigger |= FIRE_PRESSED;
+//            executeSelectedOption();
+//        }
     }
 
     public void run() {
@@ -127,14 +127,14 @@ public class Menu extends GameCanvas implements CommandListener, Runnable {
     }
 
     protected void keyPressed(int keyCode) {
-//        int gameAction = getGameAction(keyCode);
-//        if (gameAction == UP || gameAction == LEFT || gameAction == KEY_NUM2 || gameAction == KEY_NUM4) {
-//            selectedOption = (selectedOption - 1 + 2) % 2;
-//        } else if (gameAction == DOWN || gameAction == RIGHT || gameAction == KEY_NUM8 || gameAction == KEY_NUM6) {
-//            selectedOption = (selectedOption + 1) % 2;
-//        } else if (gameAction == FIRE || gameAction == KEY_NUM5) {
-//            executeSelectedOption();
-//        }
+        int gameAction = getGameAction(keyCode);
+        if (gameAction == UP || gameAction == LEFT || gameAction == KEY_NUM2 || gameAction == KEY_NUM4) {
+            selectedOption = (selectedOption - 1 + 2) % 2;
+        } else if (gameAction == DOWN || gameAction == RIGHT || gameAction == KEY_NUM8 || gameAction == KEY_NUM6) {
+            selectedOption = (selectedOption + 1) % 2;
+        } else if (gameAction == FIRE || gameAction == KEY_NUM5) {
+            executeSelectedOption();
+        }
     }
 
     private void executeSelectedOption() {
