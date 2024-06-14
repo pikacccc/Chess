@@ -33,7 +33,7 @@ import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 import javax.microedition.lcdui.game.GameCanvas;
 
-class XQWLCanvas extends GameCanvas implements CommandListener {
+class XQWLCanvas extends GameCanvas {
     private static final int PHASE_LOADING = 0;
     private static final int PHASE_WAITING = 1;
     private static final int PHASE_THINKING = 2;
@@ -92,9 +92,6 @@ class XQWLCanvas extends GameCanvas implements CommandListener {
     private int normalWidth = getWidth();
     private int normalHeight = getHeight();
 
-    Command cmdBack = new Command("", Command.EXIT, 1);
-    Command cmdRetract = new Command("", Command.OK, 1);
-
     volatile int phase = PHASE_LOADING;
 
     private boolean init = false;
@@ -102,18 +99,10 @@ class XQWLCanvas extends GameCanvas implements CommandListener {
     private Image[] imgPieces = new Image[24];
     private int squareSize, width, height, left, right, top, bottom;
 
-    //ºó¼ÓµÄ
-    private Image BackImg;
-    private Image UndoImg;
-
     XQWLCanvas(XQWLMIDlet midlet_) {
         super(false);
         midlet = midlet_;
         setFullScreenMode(true);
-        addCommand(cmdBack);
-        addCommand(cmdRetract);
-
-        setCommandListener(this);
     }
 
 
@@ -182,7 +171,7 @@ class XQWLCanvas extends GameCanvas implements CommandListener {
                 String imagePath = "/res/images/";
                 squareSize = Math.min(width / 9, height / 10);
                 if (squareSize >= 36) {
-                    squareSize = 54;
+                    squareSize = 50;
                     imagePath += "large/";
                 } else if (squareSize >= 26) {
                     squareSize = 26;
@@ -202,8 +191,6 @@ class XQWLCanvas extends GameCanvas implements CommandListener {
                     imgSelected2 = Image.createImage(imagePath + "selected2.png");
                     imgCursor = Image.createImage(imagePath + "cursor.png");
                     imgCursor2 = Image.createImage(imagePath + "cursor2.png");
-                    BackImg = Image.createImage("/res/images/btn_back.png");
-                    UndoImg = Image.createImage("/res/images/btn_undo.png");
                     for (int pc = 0; pc < 24; pc++) {
                         if (IMAGE_NAME[pc] == null) {
                             imgPieces[pc] = null;
@@ -264,9 +251,6 @@ class XQWLCanvas extends GameCanvas implements CommandListener {
             g.setColor(0x0000ff);
             g.drawString(message, width / 2, height / 2, Graphics.HCENTER + Graphics.BASELINE);
         }
-
-        g.drawImage(BackImg, 30, height - 50, 0);
-        g.drawImage(UndoImg, width - 100, height - 50, 0);
     }
 
     protected void keyPressed(int code) {
@@ -276,6 +260,12 @@ class XQWLCanvas extends GameCanvas implements CommandListener {
             return;
         }
         if (phase == PHASE_THINKING) {
+            return;
+        }
+
+        if (code == -6 || code == 8 || code == 96 || code == -8 || code == -7) {
+            midlet.OpenMenu();
+            midlet.CloseGame();
             return;
         }
 
@@ -298,36 +288,7 @@ class XQWLCanvas extends GameCanvas implements CommandListener {
                     deltaY = 1;
                     break;
                 default:
-                    switch (code) {
-                        case KEY_NUM1:
-                            deltaX = -1;
-                            deltaY = -1;
-                            break;
-                        case KEY_NUM2:
-                            deltaY = -1;
-                            break;
-                        case KEY_NUM3:
-                            deltaX = 1;
-                            deltaY = -1;
-                            break;
-                        case KEY_NUM4:
-                            deltaX = -1;
-                            break;
-                        case KEY_NUM6:
-                            deltaX = 1;
-                            break;
-                        case KEY_NUM7:
-                            deltaX = -1;
-                            deltaY = 1;
-                            break;
-                        case KEY_NUM8:
-                            deltaY = 1;
-                            break;
-                        case KEY_NUM9:
-                            deltaX = 1;
-                            deltaY = 1;
-                            break;
-                    }
+                    break;
             }
             cursorX = (cursorX + deltaX + 9) % 9;
             cursorY = (cursorY + deltaY + 10) % 10;
@@ -356,8 +317,8 @@ class XQWLCanvas extends GameCanvas implements CommandListener {
 
     private void drawSquare(Graphics g, Image image, int sq) {
         int sqFlipped = (midlet.moveMode == COMPUTER_RED ? Position.SQUARE_FLIP(sq) : sq);
-        int sqX = left + (Position.FILE_X(sqFlipped) - Position.FILE_LEFT) * squareSize;
-        int sqY = top + (Position.RANK_Y(sqFlipped) - Position.RANK_TOP) * squareSize;
+        int sqX = left + (Position.FILE_X(sqFlipped) - Position.FILE_LEFT) * squareSize + 2;
+        int sqY = top + (Position.RANK_Y(sqFlipped) - Position.RANK_TOP) * squareSize + 2;
         g.drawImage(image, sqX, sqY, Graphics.LEFT + Graphics.TOP);
     }
 
@@ -457,15 +418,6 @@ class XQWLCanvas extends GameCanvas implements CommandListener {
         load();
         repaint();
         serviceRepaints();
-    }
-
-    public void commandAction(Command command, Displayable displayable) {
-        if (command == cmdBack) {
-            midlet.OpenMenu();
-            midlet.CloseGame();
-        } else if (command == cmdRetract) {
-            retract();
-        }
     }
 
     public void Stop() {
