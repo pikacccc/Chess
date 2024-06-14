@@ -259,11 +259,11 @@ public class XQWLMIDlet extends MIDlet {
     }
 
     public void StartGame() {
+        display.setCurrent(canvas);
         InitData();
 
-        canvas.load();
+        canvas.Start();
         startMusic("canvas");
-        display.setCurrent(canvas);
     }
 
     public void CloseGame() {

@@ -33,7 +33,7 @@ import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 import javax.microedition.lcdui.game.GameCanvas;
 
-class XQWLCanvas extends GameCanvas {
+class XQWLCanvas extends GameCanvas implements Runnable {
     private static final int PHASE_LOADING = 0;
     private static final int PHASE_WAITING = 1;
     private static final int PHASE_THINKING = 2;
@@ -99,12 +99,23 @@ class XQWLCanvas extends GameCanvas {
     private Image[] imgPieces = new Image[24];
     private int squareSize, width, height, left, right, top, bottom;
 
+    private Graphics g;
+
+    private boolean isRunning = false;
+
     XQWLCanvas(XQWLMIDlet midlet_) {
         super(false);
         midlet = midlet_;
         setFullScreenMode(true);
+        g = getGraphics();
     }
 
+    public void Start() {
+        isRunning = true;
+        load();
+        Thread t = new Thread(this);
+        t.start();
+    }
 
     void load() {
         setFullScreenMode(true);
@@ -142,13 +153,13 @@ class XQWLCanvas extends GameCanvas {
                         }
                     }
                     responseMove();
+                    Draw();
                 }
             }.start();
         }
-
     }
 
-    public void paint(Graphics g) {
+    public void Draw() {
         if (phase == PHASE_LOADING) {
             // Wait 1 second for resizing
             width = getWidth();
@@ -251,6 +262,7 @@ class XQWLCanvas extends GameCanvas {
             g.setColor(0x0000ff);
             g.drawString(message, width / 2, height / 2, Graphics.HCENTER + Graphics.BASELINE);
         }
+        flushGraphics();
     }
 
     protected void keyPressed(int code) {
@@ -293,8 +305,7 @@ class XQWLCanvas extends GameCanvas {
             cursorX = (cursorX + deltaX + 9) % 9;
             cursorY = (cursorY + deltaY + 10) % 10;
         }
-        repaint();
-        serviceRepaints();
+        Draw();
     }
 
     private void clickSquare() {
@@ -392,8 +403,7 @@ class XQWLCanvas extends GameCanvas {
             return true;
         }
         phase = PHASE_THINKING;
-        repaint();
-        serviceRepaints();
+        Draw();
         mvLast = search.searchMain(1000 << (midlet.level << 1));
         pos.makeMove(mvLast, true);
         int response = pos.inCheck() ? RESP_CHECK2 :
@@ -402,8 +412,7 @@ class XQWLCanvas extends GameCanvas {
             pos.setIrrev();
         }
         phase = PHASE_WAITING;
-        repaint();
-        serviceRepaints();
+        Draw();
         return !getResult(response);
     }
 
@@ -416,10 +425,24 @@ class XQWLCanvas extends GameCanvas {
         // Restore Retract Status
         System.arraycopy(retractData, 0, midlet.rsData, 0, XQWLMIDlet.RS_DATA_LEN);
         load();
-        repaint();
-        serviceRepaints();
+        Draw();
     }
 
     public void Stop() {
+        isRunning=false;
+    }
+
+    public void run() {
+        while (isRunning){
+            for(int i=0;i<10;++i){
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    // Ignored
+                }
+                Draw();
+            }
+            break;
+        }
     }
 }
