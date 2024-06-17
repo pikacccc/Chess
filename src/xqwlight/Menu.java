@@ -111,14 +111,14 @@ public class Menu extends GameCanvas implements Runnable {
         } else {
             g.setColor(0xFFFFCF);
         }
-        g.fillRect(play_x - 32, play_y - 8, 130, 32);
+        g.fillRect(play_x - 32, play_y - 10, 140, 32);
         g.drawImage(Play, play_x, play_y, 0);
         if (selectedOption == 1) {
             g.setColor(0xFADF5F);
         } else {
             g.setColor(0xFFFFCF);
         }
-        g.fillRect(exit_x - 32, exit_y - 8, 130, 32);
+        g.fillRect(exit_x - 32, exit_y - 10, 140, 32);
         g.drawImage(Exit, exit_x, exit_y, 0);
         flushGraphics();
     }

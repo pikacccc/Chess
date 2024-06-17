@@ -40,7 +40,7 @@ import javax.microedition.midlet.MIDlet;
 import javax.microedition.rms.RecordEnumeration;
 import javax.microedition.rms.RecordStore;
 
-public class XQWLMIDlet extends MIDlet {
+public class XQWLMIDlet extends MIDlet implements IExit {
     private static final String STORE_NAME = "XQWLight";
 
     static final String[] SOUND_NAME = {
@@ -56,7 +56,7 @@ public class XQWLMIDlet extends MIDlet {
 
     private final Display display;
     public XQWLCanvas canvas;
-    public GameOver gameOver;
+    public GameOverNew gameOver;
     public Menu gameMenu;
 
 //    Form form = new Form("ÖÐ¹úÏóÆå");
@@ -101,7 +101,7 @@ public class XQWLMIDlet extends MIDlet {
         canvas = new XQWLCanvas(this);
         gameMenu = new Menu();
         gameMenu.midlet = this;
-        gameOver = new GameOver();
+        gameOver = new GameOverNew();
         gameOver.midlet = this;
     }
 
@@ -286,5 +286,9 @@ public class XQWLMIDlet extends MIDlet {
 
     public void InitData() {
         moveMode = 0;
+    }
+
+    public void Exit() {
+        exitMIDlet();
     }
 }

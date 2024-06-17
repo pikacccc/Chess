@@ -33,7 +33,7 @@ import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 import javax.microedition.lcdui.game.GameCanvas;
 
-class XQWLCanvas extends GameCanvas implements Runnable {
+class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
     private static final int PHASE_LOADING = 0;
     private static final int PHASE_WAITING = 1;
     private static final int PHASE_THINKING = 2;
@@ -86,7 +86,6 @@ class XQWLCanvas extends GameCanvas implements Runnable {
 
     private Position pos = new Position();
     private Search search = new Search(pos, 12);
-    private String message;
     private int cursorX, cursorY;
     private int sqSelected, mvLast;
     private int normalWidth = getWidth();
@@ -103,11 +102,15 @@ class XQWLCanvas extends GameCanvas implements Runnable {
 
     private boolean isRunning = false;
 
+    private boolean pause = false;
+    private PausePannel pp;
+
     XQWLCanvas(XQWLMIDlet midlet_) {
         super(false);
         midlet = midlet_;
         setFullScreenMode(true);
         g = getGraphics();
+        pp = new PausePannel(midlet, this, this.getWidth(), this.getHeight());
     }
 
     public void Start() {
@@ -260,8 +263,8 @@ class XQWLCanvas extends GameCanvas implements Runnable {
         } else if (phase == PHASE_EXITTING) {
             g.setFont(fontLarge);
             g.setColor(0x0000ff);
-            g.drawString(message, width / 2, height / 2, Graphics.HCENTER + Graphics.BASELINE);
         }
+        if (pause) pp.Draw(g);
         flushGraphics();
     }
 
@@ -276,34 +279,35 @@ class XQWLCanvas extends GameCanvas implements Runnable {
         }
 
         if (code == -6 || code == 8 || code == 96 || code == -8 || code == -7) {
-            midlet.OpenMenu();
-            midlet.CloseGame();
-            return;
+            pause = true;
         }
-
-        int deltaX = 0, deltaY = 0;
         int action = getGameAction(code);
-        if (action == FIRE || code == KEY_NUM5) {
-            clickSquare();
-        } else {
-            switch (action) {
-                case UP:
-                    deltaY = -1;
-                    break;
-                case LEFT:
-                    deltaX = -1;
-                    break;
-                case RIGHT:
-                    deltaX = 1;
-                    break;
-                case DOWN:
-                    deltaY = 1;
-                    break;
-                default:
-                    break;
+        if (!pause) {
+            int deltaX = 0, deltaY = 0;
+            if (action == FIRE || code == KEY_NUM5) {
+                clickSquare();
+            } else {
+                switch (action) {
+                    case UP:
+                        deltaY = -1;
+                        break;
+                    case LEFT:
+                        deltaX = -1;
+                        break;
+                    case RIGHT:
+                        deltaX = 1;
+                        break;
+                    case DOWN:
+                        deltaY = 1;
+                        break;
+                    default:
+                        break;
+                }
+                cursorX = (cursorX + deltaX + 9) % 9;
+                cursorY = (cursorY + deltaY + 10) % 10;
             }
-            cursorX = (cursorX + deltaX + 9) % 9;
-            cursorY = (cursorY + deltaY + 10) % 10;
+        } else {
+           pp.keyPressed(action);
         }
         Draw();
     }
@@ -429,20 +433,26 @@ class XQWLCanvas extends GameCanvas implements Runnable {
     }
 
     public void Stop() {
-        isRunning=false;
+        isRunning = false;
     }
 
     public void run() {
-        while (isRunning){
-            for(int i=0;i<10;++i){
+        while (isRunning) {
+            for (int i = 0; i < 10; ++i) {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
                     // Ignored
                 }
+
                 Draw();
             }
             break;
         }
+    }
+
+    public void RestartGame() {
+        pause = false;
+        Draw();
     }
 }
