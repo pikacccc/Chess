@@ -141,58 +141,58 @@ public class XQWLMIDlet extends MIDlet implements IExit {
     }
 
     void playSound(int response) {
-        final int i = response;
-        new Thread() {
-            public void run() {
-                Player p = createPlayer("/res/sounds/" + SOUND_NAME[i] + ".wav", "audio/x-wav");
-                if (p == null) {
-                    return;
-                }
-                try {
-                    p.realize();
-                    VolumeControl vc = (VolumeControl) p.getControl("VolumeControl");
-                    if (vc != null) {
-                        vc.setLevel(2 * 20);
-                    }
-                    long t = p.getDuration();
-                    p.start();
-                    if (t != Player.TIME_UNKNOWN) {
-                        sleep(t / 1000 + 1);
-                    }
-                    while (p.getState() == Player.STARTED) {
-                        sleep(100);
-                    }
-                } catch (Exception e) {
-                    // Ignored
-                }
-                p.close();
-            }
-        }.start();
+//        final int i = response;
+//        new Thread() {
+//            public void run() {
+//                Player p = createPlayer("/res/sounds/" + SOUND_NAME[i] + ".wav", "audio/x-wav");
+//                if (p == null) {
+//                    return;
+//                }
+//                try {
+//                    p.realize();
+//                    VolumeControl vc = (VolumeControl) p.getControl("VolumeControl");
+//                    if (vc != null) {
+//                        vc.setLevel(2 * 20);
+//                    }
+//                    long t = p.getDuration();
+//                    p.start();
+//                    if (t != Player.TIME_UNKNOWN) {
+//                        sleep(t / 1000 + 1);
+//                    }
+//                    while (p.getState() == Player.STARTED) {
+//                        sleep(100);
+//                    }
+//                } catch (Exception e) {
+//                    // Ignored
+//                }
+//                p.close();
+//            }
+//        }.start();
     }
 
     void stopMusic() {
-        if (midiPlayer != null) {
-            midiPlayer.close();
-            midiPlayer = null;
-        }
+//        if (midiPlayer != null) {
+//            midiPlayer.close();
+//            midiPlayer = null;
+//        }
     }
 
     void startMusic(String strMusic) {
-        stopMusic();
-        if (music == 0) {
-            return;
-        }
-        midiPlayer = createPlayer("/res/musics/" + strMusic + ".mid", "audio/midi");
-        if (midiPlayer == null) {
-            return;
-        }
-        try {
-            midiPlayer.setLoopCount(-1);
-            midiPlayer.realize();
-            midiPlayer.start();
-        } catch (Exception e) {
-            // Ignored
-        }
+//        stopMusic();
+//        if (music == 0) {
+//            return;
+//        }
+//        midiPlayer = createPlayer("/res/musics/" + strMusic + ".mid", "audio/midi");
+//        if (midiPlayer == null) {
+//            return;
+//        }
+//        try {
+//            midiPlayer.setLoopCount(-1);
+//            midiPlayer.realize();
+//            midiPlayer.start();
+//        } catch (Exception e) {
+//            // Ignored
+//        }
     }
 
     void RestoreData() {

@@ -31,7 +31,7 @@ public class Search {
     private static final int HASH_ALPHA = 1;
     private static final int HASH_BETA = 2;
     private static final int HASH_PV = 3;
-    private static final int LIMIT_DEPTH = 8;
+    private static final int LIMIT_DEPTH = 2;
     private static final int NULL_DEPTH = 2;
     private static final int RANDOM_MASK = 7;
     private static final int MAX_GEN_MOVES = Position.MAX_GEN_MOVES;

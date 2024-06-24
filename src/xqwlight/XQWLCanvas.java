@@ -105,6 +105,9 @@ class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
     private boolean pause = false;
     private PausePannel pp;
 
+    private int Key;
+    private int code;
+
     XQWLCanvas(XQWLMIDlet midlet_) {
         super(false);
         midlet = midlet_;
@@ -265,10 +268,23 @@ class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
             g.setColor(0x0000ff);
         }
         if (pause) pp.Draw(g);
+
+        String numberString = String.valueOf(this.Key);
+        int x = getWidth() / 2 - g.getFont().stringWidth(numberString) / 2;
+        int y = getHeight() / 2 - g.getFont().getHeight() / 2;
+        g.setColor(0, 0, 0); // ºÚÉ«
+        g.drawString(numberString, x, y, Graphics.TOP | Graphics.LEFT);
+
+        String numberString_2 = String.valueOf(this.code);
+        int x_2 = getWidth() / 2 - g.getFont().stringWidth(numberString) / 2;
+        int y_2 = getHeight() / 2 - g.getFont().getHeight() / 2;
+        g.setColor(0, 0, 0); // ºÚÉ«
+        g.drawString(numberString_2, x_2 + 50, y_2, Graphics.TOP | Graphics.LEFT);
         flushGraphics();
     }
 
     protected void keyPressed(int code) {
+        this.Key = code;
         if (phase == PHASE_EXITTING) {
             midlet.OpenMenu();
             midlet.CloseGame();
@@ -282,6 +298,7 @@ class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
             pause = true;
         }
         int action = getGameAction(code);
+        this.code = action;
         if (!pause) {
             int deltaX = 0, deltaY = 0;
             if (action == FIRE || code == KEY_NUM5) {
@@ -307,7 +324,7 @@ class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
                 cursorY = (cursorY + deltaY + 10) % 10;
             }
         } else {
-           pp.keyPressed(action);
+            pp.keyPressed(action);
         }
         Draw();
     }
