@@ -293,11 +293,13 @@ class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
         if (phase == PHASE_THINKING) {
             return;
         }
-
-        if (code == -6 || code == 8 || code == 96 || code == -8 || code == -7) {
-            pause = true;
-        }
+        
         int action = getGameAction(code);
+        if (code == 8 || code == 96 || (code <= -6 && code >= -20)) {
+            if (action != FIRE && action != UP && action != LEFT && action != RIGHT && action == DOWN) {
+                pause = true;
+            }
+        }
         this.code = action;
         if (!pause) {
             int deltaX = 0, deltaY = 0;
