@@ -110,7 +110,7 @@ public class XQWLMIDlet extends MIDlet implements IExit {
             return;
         }
         started = true;
-        RestoreData();
+//        RestoreData();
         startMusic("form");
         OpenMenu();
     }
