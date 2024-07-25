@@ -270,8 +270,8 @@ class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
         if (pause) pp.Draw(g);
 
         String numberString = String.valueOf(this.Key);
-        int x = width/2;
-        int y = height/2;
+        int x = 0;
+        int y = 0;
         g.setColor(0, 0, 0); // ºÚÉ«
         g.drawString(numberString, x, y, Graphics.TOP | Graphics.LEFT);
 
