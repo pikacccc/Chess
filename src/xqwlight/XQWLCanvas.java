@@ -283,8 +283,8 @@ class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
         flushGraphics();
     }
 
-    protected void keyPressed(int code) {
-        this.Key = code;
+    protected void keyPressed(int keyCode) {
+        this.Key = keyCode;
         if (phase == PHASE_EXITTING) {
             midlet.OpenMenu();
             midlet.CloseGame();
@@ -294,8 +294,8 @@ class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
             return;
         }
 
-        int action = getGameAction(code);
-        if (code == 8 || code == 96 || (code <= -6 && code >= -20)) {
+        int action = getGameAction(keyCode);
+        if (keyCode == 8 || keyCode == 96 || (keyCode <= -6 && keyCode >= -20)) {
             if (action != FIRE && action != UP && action != LEFT && action != RIGHT && action != DOWN) {
                 pause = true;
             }
@@ -303,7 +303,7 @@ class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
         this.code = action;
         if (!pause) {
             int deltaX = 0, deltaY = 0;
-            if (action == FIRE || code == KEY_NUM5) {
+            if (action == FIRE || keyCode == KEY_NUM5) {
                 clickSquare();
             } else {
                 switch (action) {
@@ -329,6 +329,13 @@ class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
             pp.keyPressed(action);
         }
         Draw();
+    }
+
+    protected void hideNotify() {
+        super.hideNotify();
+        pause = true;
+        Draw();
+        System.out.println("Out");
     }
 
     private void clickSquare() {
