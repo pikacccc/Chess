@@ -33,7 +33,7 @@ import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 import javax.microedition.lcdui.game.GameCanvas;
 
-class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
+class XQWLCanvas extends Canvas implements Runnable, IRestartGame {
     private static final int PHASE_LOADING = 0;
     private static final int PHASE_WAITING = 1;
     private static final int PHASE_THINKING = 2;
@@ -109,10 +109,8 @@ class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
     private int code;
 
     XQWLCanvas(XQWLMIDlet midlet_) {
-        super(false);
         midlet = midlet_;
         setFullScreenMode(true);
-        g = getGraphics();
         pp = new PausePannel(midlet, this, this.getWidth(), this.getHeight());
     }
 
@@ -159,13 +157,13 @@ class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
                         }
                     }
                     responseMove();
-                    Draw();
+                    repaint();
                 }
             }.start();
         }
     }
 
-    public void Draw() {
+    public void Draw(Graphics g) {
         if (phase == PHASE_LOADING) {
             // Wait 1 second for resizing
             width = getWidth();
@@ -280,7 +278,6 @@ class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
         int y_2 = 0;
         g.setColor(0, 0, 0); // ºÚÉ«
         g.drawString(numberString_2, x_2 + 50, y_2, Graphics.TOP | Graphics.LEFT);
-        flushGraphics();
     }
 
     protected void keyPressed(int keyCode) {
@@ -328,14 +325,18 @@ class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
         } else {
             pp.keyPressed(action);
         }
-        Draw();
+        repaint();
     }
 
     protected void hideNotify() {
         super.hideNotify();
         pause = true;
-        Draw();
+        repaint();
         System.out.println("Out");
+    }
+
+    protected void paint(Graphics g) {
+        Draw(g);
     }
 
     private void clickSquare() {
@@ -433,7 +434,7 @@ class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
             return true;
         }
         phase = PHASE_THINKING;
-        Draw();
+        repaint();
         mvLast = search.searchMain(1000 << (midlet.level << 1));
         pos.makeMove(mvLast, true);
         int response = pos.inCheck() ? RESP_CHECK2 :
@@ -442,7 +443,7 @@ class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
             pos.setIrrev();
         }
         phase = PHASE_WAITING;
-        Draw();
+        repaint();
         return !getResult(response);
     }
 
@@ -455,7 +456,7 @@ class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
         // Restore Retract Status
         System.arraycopy(retractData, 0, midlet.rsData, 0, XQWLMIDlet.RS_DATA_LEN);
         load();
-        Draw();
+        repaint();
     }
 
     public void Stop() {
@@ -471,7 +472,7 @@ class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
                     // Ignored
                 }
 
-                Draw();
+                repaint();
             }
             break;
         }
@@ -479,6 +480,6 @@ class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
 
     public void RestartGame() {
         pause = false;
-        Draw();
+        repaint();
     }
 }
