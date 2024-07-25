@@ -121,7 +121,7 @@ public class XQWLMIDlet extends MIDlet implements IExit {
 
     public void destroyApp(boolean unc) {
         stopMusic();
-        SavaData();
+//        SavaData();
         started = false;
     }
 
