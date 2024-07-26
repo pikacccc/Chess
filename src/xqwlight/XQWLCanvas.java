@@ -271,16 +271,15 @@ class XQWLCanvas extends Canvas implements Runnable, IRestartGame {
         int x = 0;
         int y = 0;
         g.setColor(0, 0, 0); // 黑色
-        g.drawString(numberString, x, y, Graphics.TOP | Graphics.LEFT);
+//        g.drawString(numberString, x, y, Graphics.TOP | Graphics.LEFT);
 
         String numberString_2 = String.valueOf(this.code);
         int x_2 = 0;
         int y_2 = 0;
         g.setColor(0, 0, 0); // 黑色
-        g.drawString(numberString_2, x_2 + 50, y_2, Graphics.TOP | Graphics.LEFT);
+//        g.drawString(numberString_2, x_2 + 50, y_2, Graphics.TOP | Graphics.LEFT);
         g.setColor(0, 0, 255);
-//        g.drawString("0/返回键为呼出菜单", this.width - 110, this.height - 16, 4 | 16);
-        this.drawString(g, "0/返回：返回菜单", this.width - 110, this.height - 16, 4 | 16);
+        this.drawString(g, "0/返回：返回菜单", this.width - 140, this.height - 16, 4 | 16);
     }
 
     protected void keyPressed(int keyCode) {
