@@ -123,6 +123,7 @@ public class XQWLMIDlet extends MIDlet implements IExit {
         stopMusic();
 //        SavaData();
         started = false;
+        notifyDestroyed();
     }
 
     Player createPlayer(String name, String type) {
@@ -226,7 +227,6 @@ public class XQWLMIDlet extends MIDlet implements IExit {
 
     public void exitMIDlet() {
         destroyApp(true);
-        notifyDestroyed();
     }
 
     public void OpenGameOver(boolean win) {
