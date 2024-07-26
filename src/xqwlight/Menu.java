@@ -27,7 +27,7 @@ public class Menu extends GameCanvas implements Runnable {
     private int exit_x;
     private int exit_y;
 
-    private String version="V1.1";
+    private String version="V1.2";
 
     public Menu() {
         super(false);

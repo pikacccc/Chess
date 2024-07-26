@@ -278,6 +278,9 @@ class XQWLCanvas extends Canvas implements Runnable, IRestartGame {
         int y_2 = 0;
         g.setColor(0, 0, 0); // 黑色
         g.drawString(numberString_2, x_2 + 50, y_2, Graphics.TOP | Graphics.LEFT);
+        g.setColor(0, 0, 255);
+//        g.drawString("0/返回键为呼出菜单", this.width - 110, this.height - 16, 4 | 16);
+        this.drawString(g, "0/返回：返回菜单", this.width - 110, this.height - 16, 4 | 16);
     }
 
     protected void keyPressed(int keyCode) {
@@ -292,7 +295,7 @@ class XQWLCanvas extends Canvas implements Runnable, IRestartGame {
         }
 
         int action = getGameAction(keyCode);
-        if (keyCode == 8 || keyCode == 96 || keyCode == -6 || keyCode == 48 || keyCode == -31 || keyCode == -8 || keyCode == -9|| keyCode == -5) {
+        if (keyCode == 8 || keyCode == 96 || keyCode == -6 || keyCode == 48 || keyCode == -31 || keyCode == -8 || keyCode == -9 || keyCode == -5) {
             if (action != FIRE && action != UP && action != LEFT && action != RIGHT && action != DOWN) {
                 pause = true;
             }
@@ -481,5 +484,20 @@ class XQWLCanvas extends Canvas implements Runnable, IRestartGame {
     public void RestartGame() {
         pause = false;
         repaint();
+    }
+
+    private void drawString(Graphics g, String str, int x, int y, int anchor) {
+        g.setColor(0, 0, 0);
+        g.drawString(str, x - 2, y, anchor);
+        g.drawString(str, x + 2, y, anchor);
+        g.drawString(str, x, y - 2, anchor);
+        g.drawString(str, x, y + 2, anchor);
+        g.setColor(0, 0, 129);
+        g.drawString(str, x - 1, y, anchor);
+        g.drawString(str, x + 1, y, anchor);
+        g.drawString(str, x, y - 1, anchor);
+        g.drawString(str, x, y + 1, anchor);
+        g.setColor(199, 218, 243);
+        g.drawString(str, x, y, anchor);
     }
 }
