@@ -292,7 +292,7 @@ class XQWLCanvas extends Canvas implements Runnable, IRestartGame {
         }
 
         int action = getGameAction(keyCode);
-        if (keyCode == 8 || keyCode == 96 || (keyCode <= -6 && keyCode >= -20)) {
+        if (keyCode == 8 || keyCode == 96 || keyCode == -6 || keyCode == 48 || keyCode == -31 || keyCode == -8 || keyCode == -9) {
             if (action != FIRE && action != UP && action != LEFT && action != RIGHT && action != DOWN) {
                 pause = true;
             }
