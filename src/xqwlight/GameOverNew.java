@@ -74,12 +74,21 @@ public class GameOverNew extends GameCanvas implements Runnable {
     }
 
     public void run() {
+        delay(150);
         draw();
         while (isRunning) {
 //            tick();
 //            if (!isRunning) break;
 //            draw();
         }
+    }
+
+    public void delay(int value) {
+        try {
+            Thread.sleep((long)value);
+        } catch (Exception var3) {
+        }
+
     }
 
     private int keyTrigger = 0;

@@ -1,39 +1,11 @@
-/*
-XQWLCanvas.java - Source Code for XiangQi Wizard Light, Part IV
-
-XiangQi Wizard Light - a Chinese Chess Program for Java ME
-Designed by Morning Yellow, Version: 1.70, Last Modified: Mar. 2013
-Copyright (C) 2004-2013 www.xqbase.com
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along
-with this program; if not, write to the Free Software Foundation, Inc.,
-51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*/
 package xqwlight;
 
-import com.sun.j2me.global.FormatAbstractionLayer;
-
-import javax.microedition.lcdui.Canvas;
-import javax.microedition.lcdui.Command;
-import javax.microedition.lcdui.CommandListener;
-import javax.microedition.lcdui.Display;
-import javax.microedition.lcdui.Displayable;
 import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 import javax.microedition.lcdui.game.GameCanvas;
 
-class XQWLCanvas extends Canvas implements Runnable, IRestartGame {
+class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
     private static final int PHASE_LOADING = 0;
     private static final int PHASE_WAITING = 1;
     private static final int PHASE_THINKING = 2;
@@ -109,6 +81,8 @@ class XQWLCanvas extends Canvas implements Runnable, IRestartGame {
     private int code;
 
     XQWLCanvas(XQWLMIDlet midlet_) {
+        super(false);
+        g=getGraphics();
         midlet = midlet_;
         setFullScreenMode(true);
         pp = new PausePannel(midlet, this, this.getWidth(), this.getHeight());
@@ -157,13 +131,13 @@ class XQWLCanvas extends Canvas implements Runnable, IRestartGame {
                         }
                     }
                     responseMove();
-                    repaint();
+                    Draw();
                 }
             }.start();
         }
     }
 
-    public void Draw(Graphics g) {
+    public void Draw() {
         if (phase == PHASE_LOADING) {
             // Wait 1 second for resizing
             width = getWidth();
@@ -280,6 +254,7 @@ class XQWLCanvas extends Canvas implements Runnable, IRestartGame {
         g.drawString(numberString_2, x_2 + 50, y_2, Graphics.TOP | Graphics.LEFT);
         g.setColor(0, 0, 255);
         this.drawString(g, "0/·µ»Ø£º·µ»Ø²Ëµ¥", this.width - 140, this.height - 16, 4 | 16);
+        flushGraphics();
     }
 
     protected void keyPressed(int keyCode) {
@@ -327,18 +302,14 @@ class XQWLCanvas extends Canvas implements Runnable, IRestartGame {
         } else {
             pp.keyPressed(action);
         }
-        repaint();
+        Draw();
     }
 
     protected void hideNotify() {
         super.hideNotify();
         pause = true;
-        repaint();
+        Draw();
         System.out.println("Out");
-    }
-
-    protected void paint(Graphics g) {
-        Draw(g);
     }
 
     private void clickSquare() {
@@ -436,7 +407,7 @@ class XQWLCanvas extends Canvas implements Runnable, IRestartGame {
             return true;
         }
         phase = PHASE_THINKING;
-        repaint();
+        Draw();
         mvLast = search.searchMain(1000 << (midlet.level << 1));
         pos.makeMove(mvLast, true);
         int response = pos.inCheck() ? RESP_CHECK2 :
@@ -445,7 +416,7 @@ class XQWLCanvas extends Canvas implements Runnable, IRestartGame {
             pos.setIrrev();
         }
         phase = PHASE_WAITING;
-        repaint();
+        Draw();
         return !getResult(response);
     }
 
@@ -455,10 +426,9 @@ class XQWLCanvas extends Canvas implements Runnable, IRestartGame {
     }
 
     void retract() {
-        // Restore Retract Status
         System.arraycopy(retractData, 0, midlet.rsData, 0, XQWLMIDlet.RS_DATA_LEN);
         load();
-        repaint();
+        Draw();
     }
 
     public void Stop() {
@@ -474,7 +444,7 @@ class XQWLCanvas extends Canvas implements Runnable, IRestartGame {
                     // Ignored
                 }
 
-                repaint();
+                Draw();
             }
             break;
         }
@@ -482,7 +452,7 @@ class XQWLCanvas extends Canvas implements Runnable, IRestartGame {
 
     public void RestartGame() {
         pause = false;
-        repaint();
+        Draw();
     }
 
     private void drawString(Graphics g, String str, int x, int y, int anchor) {
