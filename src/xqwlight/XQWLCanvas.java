@@ -67,6 +67,7 @@ class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
 
     private boolean init = false;
     private Image imgBoard, imgSelected, imgSelected2, imgCursor, imgCursor2;
+    private Image backTip;
     private Image[] imgPieces = new Image[24];
     private int squareSize, width, height, left, right, top, bottom;
 
@@ -158,6 +159,7 @@ class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
                 init = true;
 
                 String imagePath = "/res/images/";
+                backTip = Util.LoadImg("/res/images/BackTip.png");
                 squareSize = Math.min(width / 9, height / 10);
                 if (squareSize >= 36) {
                     squareSize = 50;
@@ -252,8 +254,7 @@ class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
 //        int y_2 = 0;
 //        g.setColor(0, 0, 0); // 黑色
 //        g.drawString(numberString_2, x_2 + 50, y_2, Graphics.TOP | Graphics.LEFT);
-        g.setColor(0, 0, 255);
-        this.drawString(g, "0/返回：返回菜单", this.width - 140, this.height - 20, 0);
+        g.drawImage(backTip, width - 140, height - 20, 0);
         flushGraphics();
     }
 
