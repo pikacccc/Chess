@@ -241,19 +241,19 @@ class XQWLCanvas extends GameCanvas implements Runnable, IRestartGame {
         }
         if (pause) pp.Draw(g);
 
-        String numberString = String.valueOf(this.Key);
-        int x = 0;
-        int y = 0;
-        g.setColor(0, 0, 0); // 黑色
-        g.drawString(numberString, x, y, Graphics.TOP | Graphics.LEFT);
+//        String numberString = String.valueOf(this.Key);
+//        int x = 0;
+//        int y = 0;
+//        g.setColor(0, 0, 0); // 黑色
+//        g.drawString(numberString, x, y, Graphics.TOP | Graphics.LEFT);
 
-        String numberString_2 = String.valueOf(this.code);
-        int x_2 = 0;
-        int y_2 = 0;
-        g.setColor(0, 0, 0); // 黑色
-        g.drawString(numberString_2, x_2 + 50, y_2, Graphics.TOP | Graphics.LEFT);
+//        String numberString_2 = String.valueOf(this.code);
+//        int x_2 = 0;
+//        int y_2 = 0;
+//        g.setColor(0, 0, 0); // 黑色
+//        g.drawString(numberString_2, x_2 + 50, y_2, Graphics.TOP | Graphics.LEFT);
         g.setColor(0, 0, 255);
-        this.drawString(g, "0/返回：返回菜单", this.width - 140, this.height - 16, 4 | 16);
+        this.drawString(g, "0/返回：返回菜单", this.width - 140, this.height - 20, 0);
         flushGraphics();
     }
 
